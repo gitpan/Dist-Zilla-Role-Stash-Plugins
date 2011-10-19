@@ -1,4 +1,3 @@
-Build.PL
 Changes
 LICENSE
 MANIFEST
@@ -7,6 +6,7 @@ META.json
 META.yml
 Makefile.PL
 README
+dist.ini
 lib/Dist/Zilla/Role/Stash/Plugins.pm
 t/00-compile.t
 t/000-report-versions-tiny.t
@@ -21,6 +21,7 @@ t/lib/Dist/Zilla/Stash/Test.pm
 t/lib/Test/Plugin.pm
 t/plugin.t
 xt/author/critic.t
+xt/author/pod-spell.t
 xt/release/cpan-changes.t
 xt/release/dist-manifest.t
 xt/release/distmeta.t
@@ -32,7 +33,6 @@ xt/release/mojibake.t
 xt/release/no-tabs.t
 xt/release/pod-coverage.t
 xt/release/pod-linkcheck.t
-xt/release/pod-spell.t
 xt/release/pod-syntax.t
 xt/release/portability.t
 xt/release/synopsis.t

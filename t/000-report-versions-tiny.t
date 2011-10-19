@@ -48,18 +48,20 @@ sub pmver {
     return sprintf('%-45s => %-10s%-15s%s', $module, $pmver, $wanted, "\n");
 }
 
+eval { $v .= pmver('Config::MVP::Slicer','any version') };
 eval { $v .= pmver('Dist::Zilla::Role::DynamicConfig','any version') };
 eval { $v .= pmver('Dist::Zilla::Role::Plugin','any version') };
 eval { $v .= pmver('Dist::Zilla::Role::Stash','any version') };
 eval { $v .= pmver('Dist::Zilla::Tester','any version') };
+eval { $v .= pmver('ExtUtils::MakeMaker','6.30') };
 eval { $v .= pmver('File::Find','any version') };
 eval { $v .= pmver('File::Temp','any version') };
-eval { $v .= pmver('Module::Build','0.3601') };
 eval { $v .= pmver('Moose','any version') };
 eval { $v .= pmver('Moose::Role','any version') };
 eval { $v .= pmver('Test::MockObject','any version') };
-eval { $v .= pmver('Test::MockObject::Extends','any version') };
 eval { $v .= pmver('Test::More','0.88') };
+eval { $v .= pmver('strict','any version') };
+eval { $v .= pmver('warnings','any version') };
 
 
 

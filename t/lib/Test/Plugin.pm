@@ -1,12 +1,4 @@
 # vim: set ts=2 sts=2 sw=2 expandtab smarttab:
-#
-# This file is part of Dist-Zilla-Role-Stash-Plugins
-#
-# This software is copyright (c) 2010 by Randy Stauner.
-#
-# This is free software; you can redistribute it and/or modify it under
-# the same terms as the Perl 5 programming language system itself.
-#
 package Test::Plugin;
 # ABSTRACT: Test Dist::Zilla::Role::Stash::Plugins
 
@@ -36,4 +28,5 @@ has 'not' => (
 );
 
 no Moose;
+__PACKAGE__->meta->make_immutable;
 1;

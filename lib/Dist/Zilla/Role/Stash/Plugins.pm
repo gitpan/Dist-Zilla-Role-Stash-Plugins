@@ -11,14 +11,15 @@ use strict;
 use warnings;
 
 package Dist::Zilla::Role::Stash::Plugins;
-BEGIN {
-  $Dist::Zilla::Role::Stash::Plugins::VERSION = '1.003';
+{
+  $Dist::Zilla::Role::Stash::Plugins::VERSION = '1.004';
 }
 BEGIN {
   $Dist::Zilla::Role::Stash::Plugins::AUTHORITY = 'cpan:RWSTAUNER';
 }
 # ABSTRACT: A Stash that stores arguments for plugins
 
+use Config::MVP::Slicer ();
 use Moose::Role;
 with qw(
   Dist::Zilla::Role::DynamicConfig
@@ -43,73 +44,35 @@ has argument_separator => (
 # _config inherited
 
 
+has slicer => (
+  is       => 'ro',
+  isa      => 'Config::MVP::Slicer',
+  default  => sub {
+    my $self = shift;
+    Config::MVP::Slicer->new({
+      config        => $self->_config,
+      separator     => $self->argument_separator,
+      match_package => sub { $self->expand_package($_[0]) eq $_[1] },
+    })
+  },
+);
+
+
 sub get_stashed_config {
   my ($self, $plugin) = @_;
 
-  # use ref() rather than $plugin->plugin_name() because we want to match
-  # the full package name as returned by expand_package() below
-  # rather than '@Bundle/ShortPluginName'
-  my $name = ref($plugin);
+  # TODO: should we compare liberal argument_separator to strict one and warn if not matched?
 
-  my $config = $self->_config;
-  my $stashed = {};
-  my $splitter = qr/${\ $self->argument_separator }/;
-
-  while( my ($key, $value) = each %$config ){
-    my ($plug, $attr) = ($key =~ $splitter);
-
-    unless($plug && $attr){
-      warn("[${\ ref($self) }] '$key' did not match $splitter.  " .
-        "Do you need a more specific 'argument_separator'?\n");
-      next;
-    }
-
-    my $pack = $self->expand_package($plug);
-
-    $stashed->{$attr} = $value
-      if $pack eq $name;
-  }
-  return $stashed;
+  return $self->slicer->slice($plugin);
 }
 
 
 sub merge_stashed_config {
   my ($self, $plugin, $opts) = @_;
   $opts ||= {};
-  $opts->{join} = ' '
-    if !exists $opts->{join};
-  my $stashed = $opts->{stashed} || $self->get_stashed_config($plugin);
-
-  while( my ($key, $value) = each %$stashed ){
-    # call attribute writer (attribute must be 'rw'!)
-    my $attr = $plugin->meta->find_attribute_by_name($key);
-    if( !$attr ){
-      warn("[${\ ref($self) }] skipping '$key' attribute: " .
-        "not found on ${\ ref($plugin) }\n");
-      next;
-    }
-    my $type = $attr->type_constraint;
-    my $previous = $plugin->$key;
-    if( $previous ){
-      if( UNIVERSAL::isa($previous, 'ARRAY') ){
-        push(@$previous, $value);
-      }
-      elsif( $type->name eq 'Str' ){
-        # TODO: pass in string for joining
-        $plugin->$key(join($opts->{join}, $previous, $value));
-      }
-      #elsif( $type->name eq 'Bool' )
-      else {
-        $plugin->$key($value);
-      }
-    }
-    else {
-      $value = [$value]
-        if $type->name =~ /^arrayref/i;
-
-      $plugin->$key($value);
-    }
-  }
+  $opts->{stashed} ||= $self->get_stashed_config($plugin);
+  $opts->{slice} = delete $opts->{stashed};
+  return $self->slicer->merge($plugin, $opts);
 }
 
 
@@ -133,8 +96,11 @@ no Moose::Role;
 __END__
 =pod
 
-=for :stopwords Randy Stauner dist-zilla zilla cpan testmatrix url annocpan anno bugtracker
-rt cpants kwalitee diff irc mailto metadata placeholders
+=for :stopwords Randy Stauner ACKNOWLEDGEMENTS dist-zilla zilla cpan testmatrix url
+annocpan anno bugtracker rt cpants kwalitee diff irc mailto metadata
+placeholders
+
+=encoding utf-8
 
 =head1 NAME
 
@@ -142,7 +108,13 @@ Dist::Zilla::Role::Stash::Plugins - A Stash that stores arguments for plugins
 
 =head1 VERSION
 
-version 1.003
+version 1.004
+
+=head1 SYNOPSIS
+
+  # in Dist::Zilla::Stash::MyStash
+
+  with 'Dist::Zilla::Role::Stash::Plugins';
 
 =head1 DESCRIPTION
 
@@ -185,21 +157,23 @@ Inherited from L<Dist::Zilla::Role::DynamicConfig>.
 Rather than accessing this directly,
 consider L</get_stashed_config> or L</merge_stashed_config>.
 
+=head2 slicer
+
+Instance of C<Config::MVP::Slicer>
+which handles plugin configuration extraction.
+
 =head1 METHODS
 
 =head2 get_stashed_config
 
-Return a hashref of the config arguments for the plugin
-determined by C<< ref($plugin) >>.
-
-This is a slice of the I<_config> attribute
-appropriate for the plugin passed to the method.
+Return a hashref of the config arguments for the plugin.
+This is a thin wrapper around L<Config::MVP::Slicer/slice>.
 
   # with a stash of:
   # _config => {
-  #   'APlug:attr1'   => 'value1',
-  #   'APlug:second'  => '2nd',
-  #   'OtherPlug:attr => '0'
+  #   'APlug.attr1'   => 'value1',
+  #   'APlug.second'  => '2nd',
+  #   'OtherPlug.attr => '0'
   # }
 
   # from inside Dist::Zilla::Plugin::APlug
@@ -222,9 +196,7 @@ then attempt to merge it into the plugin.
 
 This require the plugin's attributes to be writable (C<'rw'>).
 
-It will attempt to push onto array references and
-concatenate onto existing strings (joined by a space).
-It will overwrite any other types.
+This is a thin wrapper around L<Config::MVP::Slicer/merge>.
 
 Possible options:
 
@@ -247,6 +219,18 @@ because the dynamic keys intended for other plugins will all
 contain non-word characters.
 
 Overwrite this if necessary.
+
+=for test_synopsis sub with;
+
+=head1 SEE ALSO
+
+=over 4
+
+=item *
+
+L<Config::MVP::Slicer>
+
+=back
 
 =head1 SUPPORT
 
@@ -322,9 +306,9 @@ progress on the request by the system.
 =head2 Source Code
 
 
-L<http://github.com/rwstauner/Dist-Zilla-Role-Stash-Plugins>
+L<https://github.com/rwstauner/Dist-Zilla-Role-Stash-Plugins>
 
-  git clone http://github.com/rwstauner/Dist-Zilla-Role-Stash-Plugins
+  git clone https://github.com/rwstauner/Dist-Zilla-Role-Stash-Plugins.git
 
 =head1 AUTHOR
 
