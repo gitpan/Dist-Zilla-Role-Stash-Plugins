@@ -12,14 +12,15 @@ my %confs = (
   't/ini-sep'  => {
     mods => {
       'Test::Minus::PlugName' => { 'Attr::Name' => 'oops' },
-      'Test::Plus::Mod::Name' => { '!goo-ber' => 'nuts', pea => 'nut' }
+      'Test::Plus::Mod::Name' => { '!goo-ber' => 'nuts', pea => ['nut', 'pod'] }
     },
-    'argument_separator'  => '^([^|]+)\|([^|]+)$',
+    'argument_separator'  => '([^|]+)\|([^|]+?)',
     _config => {
       '-PlugName|Attr::Name' => 'oops',
       # this one fails sometimes
       '+Mod::Name|!goo-ber'  => 'nuts',
-      '+Mod::Name|pea'       => 'nut',
+      '+Mod::Name|pea[1]'    => 'pod',
+      '+Mod::Name|pea[0]'    => 'nut',
     }
   },
   't/ini-test' => {
@@ -30,7 +31,7 @@ my %confs = (
       'Test::Minus::APlug::Name' => {'config' => 'confy'},
       'Test::Plugin' => {'strung' => 'high'},
     },
-    'argument_separator'  => '^(.+?)\W+(\w+)$',
+    'argument_separator'  => '(.+?)\W+(\w+)',
     _config => {
       # this one fails sometimes
       '@ABundle-fakeattr'    => 'fakevalue1',
@@ -57,7 +58,7 @@ foreach my $dir ( keys %confs ){
   my $stash = $zilla->stash_named('%Test');
   my @fields = qw(argument_separator _config);
   is_deeply([@$stash{@fields}], [@{$confs{$dir}}{@fields}], "stash matches in $dir")
-    or diag explain [$stash => not => $confs{$dir}];
+    or $ENV{AUTOMATED_TESTING} && diag explain [$stash => not => $confs{$dir}];
 
   next unless $mods;
 

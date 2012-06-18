@@ -12,7 +12,7 @@ use warnings;
 
 package Dist::Zilla::Role::Stash::Plugins;
 {
-  $Dist::Zilla::Role::Stash::Plugins::VERSION = '1.004';
+  $Dist::Zilla::Role::Stash::Plugins::VERSION = '1.005';
 }
 BEGIN {
   $Dist::Zilla::Role::Stash::Plugins::AUTHORITY = 'cpan:RWSTAUNER';
@@ -37,7 +37,7 @@ has argument_separator => (
   is       => 'ro',
   isa      => 'Str',
   # "Module::Name:variable" "-Plugin/variable"
-  default  => '^(.+?)\W+(\w+)$'
+  default  => '(.+?)\W+(\w+)',
 );
 
 
@@ -96,11 +96,11 @@ no Moose::Role;
 __END__
 =pod
 
+=encoding utf-8
+
 =for :stopwords Randy Stauner ACKNOWLEDGEMENTS dist-zilla zilla cpan testmatrix url
 annocpan anno bugtracker rt cpants kwalitee diff irc mailto metadata
-placeholders
-
-=encoding utf-8
+placeholders metacpan
 
 =head1 NAME
 
@@ -108,7 +108,7 @@ Dist::Zilla::Role::Stash::Plugins - A Stash that stores arguments for plugins
 
 =head1 VERSION
 
-version 1.004
+version 1.005
 
 =head1 SYNOPSIS
 
@@ -131,7 +131,7 @@ A regular expression that will capture
 the package name in C<$1> and
 the attribute name in C<$2>.
 
-Defaults to C<< ^(.+?)\W+(\w+)$ >>
+Defaults to C<< (.+?)\W+(\w+) >>
 which means the package variable and the attribute
 will be separated by non-word characters
 (which assumes the attributes will be
@@ -144,9 +144,12 @@ This is an example (taken from the tests in F<t/ini-sep>).
 
   # dist.ini
   [%Example]
-  argument_separator = ^([^|]+)\|([^|]+)$
+  argument_separator = ([^|]+)\|([^|]+?)
   -PlugName|Attr::Name = oops
   +Mod::Name|!goo-ber = nuts
+
+B<Note> that the regexp should not be anchored as it actually becomes
+the middle of a larger regexp (see L<Config::MVP::Slicer/separator>).
 
 =head2 _config
 
