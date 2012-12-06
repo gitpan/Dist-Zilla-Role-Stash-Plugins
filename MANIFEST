@@ -9,7 +9,7 @@ README
 dist.ini
 lib/Dist/Zilla/Role/Stash/Plugins.pm
 t/00-compile.t
-t/000-report-versions-tiny.t
+t/00-report-prereqs.t
 t/ini-config.t
 t/ini-none/dist.ini
 t/ini-none/lib/StashTest.pm
@@ -23,6 +23,7 @@ t/plugin.t
 xt/author/critic.t
 xt/author/pod-spell.t
 xt/author/test-eol.t
+xt/release/changes_has_content.t
 xt/release/cpan-changes.t
 xt/release/dist-manifest.t
 xt/release/distmeta.t

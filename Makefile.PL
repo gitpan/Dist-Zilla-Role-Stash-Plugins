@@ -14,11 +14,14 @@ my %WriteMakefileArgs = (
   "BUILD_REQUIRES" => {
     "Dist::Zilla::Role::Plugin" => 0,
     "Dist::Zilla::Tester" => 0,
+    "ExtUtils::MakeMaker" => 0,
     "File::Find" => 0,
+    "File::Spec::Functions" => 0,
     "File::Temp" => 0,
+    "List::Util" => 0,
     "Moose" => 0,
     "Test::MockObject" => 0,
-    "Test::More" => "0.88"
+    "Test::More" => 0
   },
   "CONFIGURE_REQUIRES" => {
     "ExtUtils::MakeMaker" => "6.30"
@@ -35,7 +38,7 @@ my %WriteMakefileArgs = (
     "strict" => 0,
     "warnings" => 0
   },
-  "VERSION" => "1.005",
+  "VERSION" => "1.006",
   "test" => {
     "TESTS" => "t/*.t"
   }

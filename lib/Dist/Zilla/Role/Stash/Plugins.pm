@@ -12,8 +12,10 @@ use warnings;
 
 package Dist::Zilla::Role::Stash::Plugins;
 {
-  $Dist::Zilla::Role::Stash::Plugins::VERSION = '1.005';
+  $Dist::Zilla::Role::Stash::Plugins::VERSION = '1.006';
 }
+# git description: v1.005-2-g3d6e9bb
+
 BEGIN {
   $Dist::Zilla::Role::Stash::Plugins::AUTHORITY = 'cpan:RWSTAUNER';
 }
@@ -47,6 +49,7 @@ has argument_separator => (
 has slicer => (
   is       => 'ro',
   isa      => 'Config::MVP::Slicer',
+  lazy     => 1,
   default  => sub {
     my $self = shift;
     Config::MVP::Slicer->new({
@@ -76,6 +79,8 @@ sub merge_stashed_config {
 }
 
 
+# this is a class method required by Dist::Zilla::Role::DynamicConfig
+
 sub separate_local_config {
   my ($self, $config) = @_;
   # keys for other plugins should include non-word characters
@@ -92,8 +97,8 @@ sub separate_local_config {
 no Moose::Role;
 1;
 
-
 __END__
+
 =pod
 
 =encoding utf-8
@@ -108,7 +113,7 @@ Dist::Zilla::Role::Stash::Plugins - A Stash that stores arguments for plugins
 
 =head1 VERSION
 
-version 1.005
+version 1.006
 
 =head1 SYNOPSIS
 
@@ -325,4 +330,3 @@ This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
